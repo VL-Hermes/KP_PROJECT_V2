@@ -168,7 +168,7 @@ class LaptopInventoryTest extends TestCase
     }
 
     /**
-     * Test admin can access create form with quick-fill preset button.
+     * Test admin can access create form.
      */
     public function test_admin_can_view_create_form(): void
     {
@@ -176,8 +176,7 @@ class LaptopInventoryTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Add Used Laptop to Inventory');
-        $response->assertSee('⚡ Quick-Fill Preset: Standard Working Laptop');
-        $response->assertSee('Apply Quick-Fill');
+        $response->assertSee('Save Laptop');
     }
 
     /**
