@@ -15,18 +15,18 @@
                 <p class="lead text-secondary mb-3">
                     Temukan spesifikasi lengkap, hasil diagnostik hardware terverifikasi, dan laporan kondisi fisik nyata dari laptop bekas yang tersedia.
                 </p>
-                <div class="d-flex flex-wrap gap-2 text-muted small">
+                <div class="d-flex flex-wrap gap-2 text-muted">
                     <span class="badge bg-light text-dark border"><i class="bi bi-check2 text-success me-1"></i> Spesifikasi Transparan</span>
                     <span class="badge bg-light text-dark border"><i class="bi bi-check2 text-success me-1"></i> Laporan Diagnostik Hardware</span>
                     <span class="badge bg-light text-dark border"><i class="bi bi-check2 text-success me-1"></i> Info Nyata, Tanpa Rekayasa</span>
                 </div>
             </div>
-            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+            {{-- <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
                 <div class="card bg-light border-0 p-3 text-start">
-                    {{-- <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="text-secondary small">Total Inventaris:</span>
                         <span class="badge bg-secondary">{{ $totalAll }} Unit</span>
-                    </div> --}}
+                    </div>
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="text-secondary small">Tersedia untuk Dijual:</span>
                         <span class="badge bg-success">{{ $totalAvailable }} Tersedia</span>
@@ -37,7 +37,7 @@
                         </a>
                     @endauth
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 
@@ -54,7 +54,7 @@
                         <input type="search" 
                                name="search" 
                                id="catalog-search"
-                               class="form-control border-start-0 border-end-0 ps-0" 
+                               class="form-control border-start-0 border-end-0" 
                                placeholder="Cari merek, model, CPU, RAM, storage..." 
                                value="{{ request('search') }}"
                                autocomplete="off">
@@ -123,7 +123,7 @@
                 <div class="col">
                 <div class="card shadow-sm border-0 hover-shadow h-100">
                     <div class="card-body p-0">
-                        <div class="row g-0 align-items-stretch">
+                        <div class="row g-0 align-items-stretch h-100">
 
                             {{-- Left accent bar --}}
                             <div class="col-auto d-none d-md-block" style="width:5px; background: {{ $laptop->is_available ? '#198754' : '#adb5bd' }}; border-radius: .375rem 0 0 .375rem;"></div>
@@ -153,7 +153,9 @@
                                             {{ $laptop->formatted_price }}
                                         </div>
                                     @else
-                                        <span class="text-muted small fst-italic">Hubungi Penjual</span>
+                                        <div class="fw-bold text-body-secondary fs-6">
+                                            RP -----
+                                        </div>
                                     @endif
 
                                     @if($laptop->is_available)
@@ -169,7 +171,7 @@
                             </div>
 
                             {{-- Core Specs Grid --}}
-                            <div class="col-12 col-md p-3">
+                            <div class="col-12 col-md p-3 border-bottom border-md-bottom-0 border-md-end    ">
                                 <div class="row g-2 small">
                                     {{-- CPU — full width row --}}
                                     <div class="col-12 d-flex align-items-start gap-2">
@@ -200,7 +202,7 @@
                             </div>
 
                             {{-- Right column: Optional badges + condition + actions --}}
-                            <div class="col-12 col-md-auto d-flex flex-column justify-content-between p-3 border-top border-md-top-0 border-md-start" style="min-width:200px; max-width:260px;">
+                            <div class="col-12 col-md-auto d-flex flex-column justify-content-between p-3" style="min-width:200px; max-width:260px;">
                                 <div>
                                     {{-- Optional highlight badges --}}
                                     <div class="d-flex flex-wrap gap-1 mb-2">

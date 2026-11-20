@@ -403,7 +403,7 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('laptops.index') }}">
+                                    {{-- <a class="dropdown-item" href="{{ route('laptops.index') }}">
                                         <i class="bi bi-speedometer2 me-2"></i> Inventory Manager
                                     </a>
                                     <a class="dropdown-item" href="{{ route('laptops.create') }}">
@@ -412,7 +412,7 @@
                                     <a class="dropdown-item" href="{{ route('catalog.index') }}">
                                         <i class="bi bi-eye me-2"></i> Public Catalog
                                     </a>
-                                    <div class="dropdown-divider"></div>
+                                    <div class="dropdown-divider"></div> --}}
                                     <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
                                         <i class="bi bi-person-gear me-2"></i> Account Settings
                                     </a>
@@ -478,22 +478,39 @@
             @yield('content')
         </main>
 
-        <footer class="bg-white border-top py-4 mt-auto text-center text-muted small">
+       <footer class="bg-white border-top py-4 mt-auto text-center text-muted small">
             <div class="container-fluid px-3 px-lg-4 px-xl-5">
-                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
-                    <div>
-                        <strong>Anugerah Computer</strong> &mdash; Katalog Spesifikasi Laptop Bekas & Sistem Inventaris
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                    <div class="d-flex flex-column align-items-center align-items-md-start gap-2">
+                        <div>
+                            <strong>Anugerah Computer</strong> &mdash; Katalog Spesifikasi Laptop Bekas &amp; Sistem Inventaris
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-center justify-content-md-start align-items-center gap-3 ms-4">
+                            <a href="https://wa.me/6285752036014" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-secondary">
+                                <i class="bi bi-whatsapp me-1"></i>WhatsApp
+                            </a>
+                            <a href="tel:+6285752036014" class="text-decoration-none text-secondary">
+                                <i class="bi bi-telephone me-1"></i>+62 857-5203-6014
+                            </a>
+                            <a href="https://maps.app.goo.gl/JNvR9SXpfYcY7aM89" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-secondary">
+                                <i class="bi bi-geo-alt me-1"></i>Lokasi Toko (Pontianak)
+                            </a>
+                        </div>
                     </div>
+
                     <div class="text-secondary">
-                        Built with Laravel & Bootstrap 5
+                        Built with Laravel &amp; Bootstrap 5
                     </div>
                 </div>
             </div>
         </footer>
     </div>
 
-    <!-- Floating AI Laptop Recommendation Advisor Widget -->
-    @include('components.ai-chat-widget')
+    <!-- Floating AI Laptop Recommendation Advisor Widget (Catalog pages only) -->
+    @if(request()->routeIs('catalog.*') || request()->is('catalog*') || request()->is('/'))
+        @include('components.ai-chat-widget')
+    @endif
 
     <!-- Theme Toggle Handler -->
     <script>

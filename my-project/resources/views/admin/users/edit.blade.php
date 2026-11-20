@@ -203,7 +203,7 @@
                 <div class="card shadow-sm border border-danger-subtle bg-white mb-4">
                     <div class="card-header bg-danger-subtle py-3 border-bottom d-flex align-items-center gap-2">
                         <i class="bi bi-trash3-fill text-danger fs-5"></i>
-                        <h5 class="fw-bold text-danger mb-0">Danger Zone</h5>
+                        <h5 class="fw-bold text-danger mb-0">Delete Administrator</h5>
                     </div>
                     <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>

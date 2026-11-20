@@ -10,19 +10,19 @@
             <h1 class="h3 fw-bold text-dark mb-1">Inventory Management Dashboard</h1>
             <p class="text-secondary small mb-0">Kelola spesifikasi laptop bekas, ketersediaan, dan catatan kesehatan hardware</p>
         </div>
-        <div class="d-flex gap-2">
+        {{-- <div class="d-flex gap-2">
             <a href="{{ route('catalog.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-eye me-1"></i> Public Catalog
             </a>
             <a href="{{ route('laptops.create') }}" class="btn btn-warning fw-bold shadow-sm">
                 <i class="bi bi-plus-circle-fill me-1"></i> Add New Laptop
             </a>
-        </div>
+        </div> --}}
     </div>
 
     <!-- Quick Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-md-4">
+        <div class="d-none d-md-block col-md-4">
             <div class="card border-0 shadow-sm bg-white p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <div class="col-sm-6 col-md-4">
+        <div class="d-none d-md-block col-md-4">
             <div class="card border-0 shadow-sm bg-white p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="col-sm-6 col-md-4">
+        <div class="d-none d-md-block col-md-4">
             <div class="card border-0 shadow-sm bg-white p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -124,13 +124,13 @@
 
     <!-- Inventory Table -->
     <div class="card shadow-sm border-0">
-        <div class="table-responsive">
+        <div class="table-responsive rounded-3 border">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead class="table-active">
                     <tr>
                         <th scope="col" class="ps-3 py-3" style="width: 70px;">ID</th>
                         <th scope="col" class="py-3">Brand & Model</th>
-                        <th scope="col" class="py-3">Core Specs (CPU / RAM / Storage)</th>
+                        <th scope="col" class="py-3" style="min-width:250px">Core Specs (CPU / RAM / Storage)</th>
                         <th scope="col" class="py-3">Display & GPU</th>
                         <th scope="col" class="py-3 text-center" style="min-width: 120px;">Date Added</th>
                         <th scope="col" class="py-3 text-center">Status</th>
@@ -138,7 +138,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($laptops as $laptop)
+                    @forelse($laptops as $laptop)   
                         <tr class="align-middle laptop-row" data-href="{{ route('catalog.show', $laptop) }}">
                             <td class="ps-3 fw-bold text-muted small">
                                 #{{ $laptop->id }}

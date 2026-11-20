@@ -163,7 +163,6 @@ class LaptopInventoryTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Inventory Management Dashboard');
         $response->assertSee('ThinkPad T480');
-        $response->assertSee('Add New Laptop');
         $response->assertSee('Date Added');
     }
 
@@ -379,6 +378,39 @@ class LaptopInventoryTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonPath('status', 'success');
         $this->assertStringContainsString('belum ada laptop', $response->json('reply'));
+    }
+
+    /**
+     * Test AI chat advisor widget only appears on catalog pages, not on admin or unrelated pages.
+     */
+    public function test_ai_chat_widget_only_appears_on_catalog_pages(): void
+    {
+        // 1. Should appear on catalog index and catalog show
+        $catalogResponse = $this->get('/catalog');
+        $catalogResponse->assertStatus(200);
+        $catalogResponse->assertSee('id="ai-chat-widget"', false);
+
+        $laptop = Laptop::first();
+        if ($laptop) {
+            $showResponse = $this->get("/catalog/{$laptop->id}");
+            $showResponse->assertStatus(200);
+            $showResponse->assertSee('id="ai-chat-widget"', false);
+        }
+
+        // 2. Should NOT appear on admin login page
+        $adminLoginResponse = $this->get('/admin');
+        $adminLoginResponse->assertStatus(200);
+        $adminLoginResponse->assertDontSee('id="ai-chat-widget"', false);
+
+        // 3. Should NOT appear on admin inventory dashboard
+        $inventoryResponse = $this->actingAs($this->adminUser)->get('/admin/inventory');
+        $inventoryResponse->assertStatus(200);
+        $inventoryResponse->assertDontSee('id="ai-chat-widget"', false);
+
+        // 4. Should NOT appear on admin profile page
+        $profileResponse = $this->actingAs($this->adminUser)->get('/admin/profile');
+        $profileResponse->assertStatus(200);
+        $profileResponse->assertDontSee('id="ai-chat-widget"', false);
     }
 
     /**

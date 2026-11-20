@@ -105,13 +105,13 @@
                         <!-- Role Info (Read-Only) -->
                         <div class="mb-4 p-3 bg-light rounded-3 border">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-secondary small fw-semibold">Current Privilege Level:</span>
+                                <span class="text-secondary small fw-semibold ">Current Privilege Level:</span>
                                 @if($user->isMainAdmin())
-                                    <span class="badge bg-warning text-dark fw-bold">
+                                    <span class="badge bg-warning text-dark fw-bold diagnostic-badge align-self-start align-self-sm-center">
                                         <i class="bi bi-shield-lock-fill me-1"></i>Main Admin (Full Access & Admin Management)
                                     </span>
                                 @else
-                                    <span class="badge bg-secondary">
+                                    <span class="badge bg-secondary diagnostic-badge">
                                         <i class="bi bi-shield-check me-1"></i>Standard Admin (Catalog & Inventory CRUD)
                                     </span>
                                 @endif
@@ -198,5 +198,23 @@
         </div>
     </div>
 </div>
-@endsection
 
+@push('styles')
+<style>
+    /* ---- Diagnostic badge: wrap safely on mobile without breaking viewport ---- */
+    .diagnostic-badge {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        max-width: 100%;
+        line-height: 1.35;
+    }
+    @media (min-width: 576px) {
+        .diagnostic-badge {
+            max-width: 65%;
+        }
+    }
+</style>
+@endpush
+
+@endsection

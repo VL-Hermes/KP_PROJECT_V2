@@ -413,13 +413,13 @@
         word-break: break-word;
     }
 
-    /* ---- Explicit Dark Mode High-Contrast Light Tiles ---- */
+    /* ---- Explicit Dark Mode High-Contrast Spec Sheet Tiles (Muted Cool Gray, Not Stark White) ---- */
     [data-bs-theme="dark"] .spec-cell {
-        background-color: #f1f5f9 !important;
-        border: 1px solid #cbd5e1 !important;
+        background-color: rgba(148, 163, 184, 0.55) !important;        
+        border: 1px solid #64748b !important;
     }
     [data-bs-theme="dark"] .spec-cell .spec-label {
-        color: #475569 !important;
+        color: #334155 !important;
     }
     [data-bs-theme="dark"] .spec-cell .spec-value,
     [data-bs-theme="dark"] .spec-cell p,
@@ -427,21 +427,21 @@
     [data-bs-theme="dark"] .spec-cell div:not(.badge) {
         color: #0f172a !important;
     }
-    /* Ensure readable saturation for icons inside light tiles in dark mode */
+    /* Ensure readable saturation for icons inside gray tiles in dark mode */
     [data-bs-theme="dark"] .spec-cell .text-primary {
-        color: #0d6efd !important;
+        color: #0a58ca !important;
     }
     [data-bs-theme="dark"] .spec-cell .text-info {
         color: #087990 !important;
     }
     [data-bs-theme="dark"] .spec-cell .text-warning {
-        color: #b45309 !important;
+        color: #855302 !important;
     }
     [data-bs-theme="dark"] .spec-cell .text-danger {
-        color: #dc3545 !important;
+        color: #b02a37 !important;
     }
     [data-bs-theme="dark"] .spec-cell .text-secondary {
-        color: #475569 !important;
+        color: #495057 !important;
     }
 
     /* ---- Diagnostic badge: wrap safely on mobile without breaking viewport ---- */
