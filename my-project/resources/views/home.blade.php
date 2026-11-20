@@ -14,7 +14,7 @@
                             <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 mb-2 rounded-pill">
                                 <i class="bi bi-shield-check me-1"></i> Authenticated Session
                             </span>
-                            <h1 class="display-6 fw-bold text-dark mb-2">Welcome to LaptopHub</h1>
+                            <h1 class="display-6 fw-bold text-dark mb-2">Welcome to Anugerah Computer</h1>
                             <p class="text-secondary mb-0">
                                 You are signed in. You can manage your used laptop stock, enter specifications, or browse the public catalog.
                             </p>

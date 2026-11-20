@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Portal Login - LaptopHub')
+@section('title', 'Admin Portal Login - Anugerah Computer')
 
 @section('content')
 <div class="container py-4">

@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="light">
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Theme Preference Initialization (Prevents Flash of Light Mode) -->
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('laptophub_theme');
+            const savedTheme = localStorage.getItem('Anugerah Computer_theme');
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.setAttribute('data-bs-theme', 'dark');
             } else {
@@ -346,9 +346,14 @@
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-2">
             <div class="container-fluid px-3 px-lg-4 px-xl-5">
                 <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('catalog.index') }}">
-                    <i class="bi bi-laptop fs-4 text-warning"></i>
-                    <span>Laptop<span class="text-warning">Hub</span></span>
-                    <span class="badge bg-secondary ms-1 fs-6 fw-normal d-none d-sm-inline-block">Spec Catalog</span>
+                    <img 
+                        src="{{ asset('Anugerah Computer.jpeg') }}" 
+                        alt="Anugerah Computer Logo" 
+                        class="rounded-circle flex-shrink-0"
+                        style="width: 32px; height: 32px; object-fit: cover;"
+                    >
+                    <span>Anugerah<span class="text-warning">Computer</span></span>
+                    <span class="badge bg-secondary ms-1 fs-6 fw-normal d-none d-sm-inline-block">Catalog</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
@@ -477,7 +482,7 @@
             <div class="container-fluid px-3 px-lg-4 px-xl-5">
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
                     <div>
-                        <strong>LaptopHub</strong> &mdash; Katalog Spesifikasi Laptop Bekas & Sistem Inventaris
+                        <strong>Anugerah Computer</strong> &mdash; Katalog Spesifikasi Laptop Bekas & Sistem Inventaris
                     </div>
                     <div class="text-secondary">
                         Built with Laravel & Bootstrap 5
@@ -499,7 +504,7 @@
 
             function applyTheme(theme) {
                 document.documentElement.setAttribute('data-bs-theme', theme);
-                localStorage.setItem('laptophub_theme', theme);
+                localStorage.setItem('Anugerah Computer_theme', theme);
 
                 if (theme === 'dark') {
                     if (themeToggleIcon) themeToggleIcon.className = 'bi bi-sun-fill text-warning';

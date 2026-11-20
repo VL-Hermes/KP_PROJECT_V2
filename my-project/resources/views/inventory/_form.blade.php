@@ -1,3 +1,12 @@
+@php
+    $brands = [
+        'Acer','Apple','ASUS','Dell','HP','Huawei',
+        'Lenovo','Microsoft','MSI','Samsung','Xiaomi / Redmi',
+    ];    
+    $currentBrand = old('brand', $laptop->brand);
+    $isOther = !empty($currentBrand) && !in_array($currentBrand, $brands);
+@endphp
+
 <div class="row g-4">
     <!-- LEFT MAIN COLUMN: Technical Specifications & Testing (col-lg-7 col-xl-8) -->
     <div class="col-lg-7 col-xl-8">
@@ -20,16 +29,38 @@
                         <label for="brand" class="form-label fw-bold text-dark">
                             Brand <span class="text-danger">*</span>
                         </label>
-                        <input type="text" 
-                               class="form-control @error('brand') is-invalid @enderror" 
-                               id="brand" 
-                               name="brand" 
-                               placeholder="e.g. Lenovo, Dell, HP, Apple, ASUS"
-                               value="{{ old('brand', $laptop->brand) }}" 
-                               required>
-                        @error('brand')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <select class="form-select @error('brand') is-invalid @enderror" 
+                            id="brand_select" 
+                            onchange="toggleOtherBrand(this)" 
+                            required>
+                        <option value="" disabled {{ empty($currentBrand) ? 'selected' : '' }}>Select a brand...</option>
+                        @foreach($brands as $brand)
+                            <option value="{{ $brand }}" {{ $currentBrand == $brand ? 'selected' : '' }}>{{ $brand }}</option>
+                        @endforeach
+                        <option value="Others" {{ $isOther ? 'selected' : '' }}>Others</option>
+                    </select>
+
+                    <input type="text" 
+                        class="form-control mt-2 @error('brand') is-invalid @enderror {{ $isOther ? '' : 'd-none' }}" 
+                        id="brand_input" 
+                        name="brand" 
+                        placeholder="Enter brand name..."
+                        value="{{ $currentBrand }}" 
+                        required>
+
+                    <script>
+                        function toggleOtherBrand(select) {
+                            const input = document.getElementById('brand_input');
+                            if (select.value === 'Others') {
+                                input.classList.remove('d-none');
+                                input.value = '';
+                                input.focus();
+                            } else {
+                                input.classList.add('d-none');
+                                input.value = select.value;
+                            }
+                        }
+                    </script>
                     </div>
 
                     <!-- Model -->
@@ -147,8 +178,7 @@
                                    name="price_estimate" 
                                    placeholder="e.g. 4500000"
                                    value="{{ old('price_estimate', $laptop->price_estimate ? (int)$laptop->price_estimate : '') }}" 
-                                   min="0"
-                                   step="50000">
+                                   min="100000">
                             @error('price_estimate')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -226,12 +256,12 @@
             </div>
         </div>
 
-        <!-- SECTION 4: Input / Output & Connectivity (OPTIONAL) -->
+        <!-- SECTION 3: Input / Output & Connectivity (OPTIONAL) -->
         <div class="card shadow-sm border-0 mb-4 border-top border-4 border-secondary bg-white">
             <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-plug-fill text-secondary fs-5"></i>
-                    <h5 class="fw-bold text-dark mb-0">4. Input / Output (I/O) &amp; Peripherals</h5>
+                    <h5 class="fw-bold text-dark mb-0">3. Input / Output (I/O) &amp; Peripherals</h5>
                 </div>
                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
                     Optional
@@ -356,51 +386,115 @@
             </div>
         </div> --}}
 
-        <!-- LAPTOP PHOTO / IMAGE CARD -->
+        <!-- LAPTOP PHOTOS / GALLERY CARD -->
         <div class="card shadow-sm border-0 mb-4 border-top border-4 border-primary bg-white">
             <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-image text-primary fs-5"></i>
-                    <h6 class="fw-bold text-dark mb-0">Laptop Photo / Image</h6>
+                    <i class="bi bi-images text-primary fs-5"></i>
+                    <h6 class="fw-bold text-dark mb-0">Laptop Photos / Gallery</h6>
+                </div>
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
+                    Optional &bull; Multiple Photos
+                </span>
+            </div>
+            <div class="card-body p-3 p-md-4">
+                @if($laptop->hasImage())
+                    <div class="mb-3 p-3 bg-light rounded border">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                            <span class="small text-muted fw-semibold">
+                                <i class="bi bi-collection me-1"></i>Current Photos ({{ count($laptop->all_image_urls) }}):
+                            </span>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image" value="1">
+                                <label class="form-check-label text-danger small fw-semibold" for="remove_image">
+                                    <i class="bi bi-trash me-1"></i> Remove All Photos
+                                </label>
+                            </div>
+                        </div>
+
+                        {{-- If relational images exist, allow selective deletion --}}
+                        @if($laptop->images->isNotEmpty())
+                            <div class="row g-2">
+                                @foreach($laptop->images as $img)
+                                    <div class="col-6 col-sm-4 col-md-3">
+                                        <div class="card h-100 shadow-sm border p-1 text-center bg-white">
+                                            <img src="{{ $img->image_url }}" alt="Laptop Photo" class="img-fluid rounded mb-1" style="height: 110px; width: 100%; object-fit: contain;">
+                                            <div class="form-check d-inline-block text-start small mt-auto pt-1 border-top">
+                                                <input class="form-check-input" type="checkbox" name="delete_images[]" value="{{ $img->id }}" id="del_img_{{ $img->id }}">
+                                                <label class="form-check-label text-danger small" for="del_img_{{ $img->id }}">
+                                                    Delete
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            {{-- Legacy single image_path --}}
+                            <div class="text-center">
+                                <img id="current-image-preview" src="{{ $laptop->image_url }}" alt="{{ $laptop->brand }} {{ $laptop->model }}" class="img-fluid rounded shadow-sm" style="max-height: 160px; object-fit: contain;">
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
+                <div class="mb-2">
+                    <label for="laptop-images-input" class="form-label fw-semibold text-dark small">
+                        Upload Photos (JPG, PNG, WEBP — you can select multiple files)
+                    </label>
+                    <input class="form-control form-control-sm @error('images') is-invalid @enderror @error('images.*') is-invalid @enderror @error('image') is-invalid @enderror" 
+                           type="file" 
+                           id="laptop-images-input" 
+                           name="images[]" 
+                           multiple
+                           accept="image/*">
+                    @error('images')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    @error('images.*')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    @error('image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="form-text small">Select one or multiple images. Max 5MB per file. The first photo will be used as the primary catalog thumbnail.</div>
+                </div>
+
+                <!-- Live Client-side Multiple Image Preview Box -->
+                <div id="new-images-preview-wrapper" class="d-none mt-3 p-3 bg-light rounded border">
+                    <div class="small text-success fw-bold mb-2">
+                        <i class="bi bi-check-circle me-1"></i>New Photos Selected for Upload:
+                    </div>
+                    <div id="new-images-preview-grid" class="row g-2"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- SECTION 4: Physical & Aesthetic Condition (OPTIONAL) -->
+        <div class="card shadow-sm border-0 mb-4 border-top border-4 border-info bg-white">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-shaded text-info fs-5"></i>
+                    <h6 class="fw-bold text-dark mb-0">4. Physical &amp; Aesthetic Condition</h6>
                 </div>
                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
                     Optional
                 </span>
             </div>
             <div class="card-body p-3 p-md-4">
-                @if($laptop->hasImage())
-                    <div class="mb-3 text-center p-2 bg-light rounded border">
-                        <div class="small text-muted mb-1 fw-semibold">Current Image:</div>
-                        <img id="current-image-preview" src="{{ $laptop->image_url }}" alt="{{ $laptop->brand }} {{ $laptop->model }}" class="img-fluid rounded shadow-sm" style="max-height: 160px; object-fit: contain;">
-                        <div class="form-check mt-2 text-center">
-                            <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image" value="1">
-                            <label class="form-check-label text-danger small fw-semibold" for="remove_image">
-                                <i class="bi bi-trash me-1"></i> Remove this image
-                            </label>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="mb-2">
-                    <label for="image" class="form-label fw-semibold text-dark small">
-                        Upload Image (JPG, PNG, WEBP)
-                    </label>
-                    <input class="form-control form-control-sm @error('image') is-invalid @enderror" 
-                           type="file" 
-                           id="laptop-image-input" 
-                           name="image" 
-                           accept="image/*">
-                    @error('image')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text small">Image will be saved locally in storage. Max 5MB.</div>
-                </div>
-
-                <!-- Live Client-side Image Preview Box -->
-                <div id="new-image-preview-wrapper" class="d-none mt-2 text-center p-2 bg-light rounded border">
-                    <div class="small text-success fw-bold mb-1"><i class="bi bi-check-circle me-1"></i>New Image Preview:</div>
-                    <img id="new-image-preview" src="" alt="Preview" class="img-fluid rounded" style="max-height: 150px; object-fit: contain;">
-                </div>
+                <label for="physical_condition" class="form-label fw-semibold text-dark small">
+                    Chassis &amp; Display Condition Assessment
+                </label>
+                <textarea class="form-control @error('physical_condition') is-invalid @enderror" 
+                          id="physical_condition" 
+                          name="physical_condition" 
+                          rows="4" 
+                          placeholder="e.g. Grade A- condition. Minor faint scratches on top outer cover from normal backpack carry. Screen is pristine with no pressure marks or dead pixels. Hinges are firm.">{{ old('physical_condition', $laptop->physical_condition) }}</textarea>
+                @error('physical_condition')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                <div class="form-text small">Describe scratches, dents, hinge firmness, or screen condition.</div>
             </div>
         </div>
 
@@ -471,32 +565,6 @@
             </div>
         </div>
 
-        <!-- SECTION 3: Physical & Aesthetic Condition (OPTIONAL) -->
-        <div class="card shadow-sm border-0 mb-4 border-top border-4 border-info bg-white">
-            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-shaded text-info fs-5"></i>
-                    <h6 class="fw-bold text-dark mb-0">3. Physical &amp; Aesthetic Condition</h6>
-                </div>
-                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
-                    Optional
-                </span>
-            </div>
-            <div class="card-body p-3 p-md-4">
-                <label for="physical_condition" class="form-label fw-semibold text-dark small">
-                    Chassis &amp; Display Condition Assessment
-                </label>
-                <textarea class="form-control @error('physical_condition') is-invalid @enderror" 
-                          id="physical_condition" 
-                          name="physical_condition" 
-                          rows="4" 
-                          placeholder="e.g. Grade A- condition. Minor faint scratches on top outer cover from normal backpack carry. Screen is pristine with no pressure marks or dead pixels. Hinges are firm.">{{ old('physical_condition', $laptop->physical_condition) }}</textarea>
-                @error('physical_condition')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-                <div class="form-text small">Describe scratches, dents, hinge firmness, or screen condition.</div>
-            </div>
-        </div>
 
         <!-- SECTION 6: Addons & Included Accessories (OPTIONAL) -->
         <div class="card shadow-sm border-0 mb-4 border-top border-4 border-warning bg-white">
@@ -632,24 +700,51 @@
             });
         }
 
-        // Live Image File Preview
-        const imageInput = document.getElementById('laptop-image-input');
-        const previewWrapper = document.getElementById('new-image-preview-wrapper');
-        const previewImg = document.getElementById('new-image-preview');
+        // Live Multiple Image Files Preview
+        const imagesInput = document.getElementById('laptop-images-input');
+        const previewWrapper = document.getElementById('new-images-preview-wrapper');
+        const previewGrid = document.getElementById('new-images-preview-grid');
 
-        if (imageInput && previewWrapper && previewImg) {
-            imageInput.addEventListener('change', function () {
-                const file = this.files && this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        previewImg.src = e.target.result;
-                        previewWrapper.classList.remove('d-none');
-                    };
-                    reader.readAsDataURL(file);
+        if (imagesInput && previewWrapper && previewGrid) {
+            imagesInput.addEventListener('change', function () {
+                previewGrid.innerHTML = '';
+                const files = this.files;
+
+                if (files && files.length > 0) {
+                    previewWrapper.classList.remove('d-none');
+                    Array.from(files).forEach((file) => {
+                        if (!file.type.startsWith('image/')) return;
+
+                        const col = document.createElement('div');
+                        col.className = 'col-6 col-sm-4 col-md-3 text-center';
+
+                        const card = document.createElement('div');
+                        card.className = 'card h-100 p-1 border shadow-sm bg-white';
+
+                        const img = document.createElement('img');
+                        img.className = 'img-fluid rounded mb-1';
+                        img.style.height = '100px';
+                        img.style.width = '100%';
+                        img.style.objectFit = 'contain';
+
+                        const caption = document.createElement('div');
+                        caption.className = 'small text-muted text-truncate px-1';
+                        caption.style.fontSize = '0.72rem';
+                        caption.textContent = file.name;
+
+                        card.appendChild(img);
+                        card.appendChild(caption);
+                        col.appendChild(card);
+                        previewGrid.appendChild(col);
+
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
                 } else {
                     previewWrapper.classList.add('d-none');
-                    previewImg.src = '';
                 }
             });
         }

@@ -23,11 +23,11 @@
             </div>
             <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
                 <div class="card bg-light border-0 p-3 text-start">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
+                    {{-- <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="text-secondary small">Total Inventaris:</span>
                         <span class="badge bg-secondary">{{ $totalAll }} Unit</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    </div> --}}
+                    <div class="d-flex justify-content-between align-items-center">
                         <span class="text-secondary small">Tersedia untuk Dijual:</span>
                         <span class="badge bg-success">{{ $totalAvailable }} Tersedia</span>
                     </div>
@@ -46,84 +46,75 @@
         <div class="card-body p-3">
             <form id="catalog-filter-form" action="{{ route('catalog.index') }}" method="GET" class="row g-2 align-items-center">
                 <!-- Search Keyword -->
-                <div class="{{ (request()->filled('search') || request()->filled('brand') || (request()->has('availability') && request('availability') !== 'available')) ? 'col-12 col-md-5 col-lg-5' : 'col-12 col-md-6 col-lg-6' }}">
+                <div class="{{ (request()->filled('search') || request()->filled('brand')) ? 'col-12 col-md-7 col-lg-8' : 'col-12 col-md-8 col-lg-9' }}">
                     <div class="input-group">
-                        <span class="input-group-text bg-white text-muted border-end-0">
+                        <span class="input-group-text text-muted border-end-0">
                             <i id="search-icon" class="bi bi-search"></i>
                         </span>
                         <input type="search" 
                                name="search" 
                                id="catalog-search"
-                               class="form-control border-start-0 ps-0" 
+                               class="form-control border-start-0 border-end-0 ps-0" 
                                placeholder="Cari merek, model, CPU, RAM, storage..." 
                                value="{{ request('search') }}"
                                autocomplete="off">
+                        <button type="submit" class="btn btn-outline-secondary px-3" title="Search">
+                            Cari
+                        </button>
                     </div>
                 </div>
 
-                <!-- Brand Filter -->
-                <div class="col-6 col-md-3 col-lg-3">
-                    <select name="brand" id="catalog-brand" class="form-select auto-submit">
-                        <option value="">Semua Merek ({{ $brands->count() }})</option>
-                        @foreach($brands as $brand)
-                            <option value="{{ $brand }}" {{ request('brand') === $brand ? 'selected' : '' }}>
-                                {{ $brand }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Availability Filter -->
-                <div class="{{ (request()->filled('search') || request()->filled('brand') || (request()->has('availability') && request('availability') !== 'available')) ? 'col-6 col-md-3 col-lg-3' : 'col-6 col-md-3 col-lg-3' }}">
-                    <select name="availability" id="catalog-availability" class="form-select auto-submit">
-                        <option value="available" {{ request('availability', 'available') === 'available' ? 'selected' : '' }}>
-                            Tersedia Saja
-                        </option>
-                        <option value="all" {{ request('availability') === 'all' ? 'selected' : '' }}>
-                            Semua (Tersedia & Dipesan)
-                        </option>
-                        <option value="unavailable" {{ request('availability') === 'unavailable' ? 'selected' : '' }}>
-                            Dipesan / Terjual Saja
-                        </option>
-                    </select>
+                <!-- Brand Filter (Available Brands Only) -->
+                <div class="{{ (request()->filled('search') || request()->filled('brand')) ? 'col-12 col-md-4 col-lg-3' : 'col-12 col-md-4 col-lg-3' }}">
+                    <div class="input-group">
+                        <span class="input-group-text text-muted border-end-0 d-flex align-items-center">
+                            <i class="bi bi-tag d-flex align-items-center"></i>
+                        </span>
+                        <select name="brand" id="catalog-brand" class="form-select border-start-0 auto-submit">
+                            <option value="">Semua Merek ({{ $brands->sum('count') }})</option>
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand->brand }}" {{ request('brand') === $brand->brand ? 'selected' : '' }}>
+                                    {{ $brand->brand }} ({{ $brand->count }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Reset Button (Visible when any filter is active) -->
-                @if(request()->filled('search') || request()->filled('brand') || (request()->has('availability') && request('availability') !== 'available'))
-                    <div class="col-12 col-md-1 col-lg-1 d-flex align-items-center">
-                        <a href="{{ route('catalog.index') }}" class="btn btn-outline-secondary w-100 px-2" title="Reset all filters back to default">
-                            <i class="bi bi-x-circle me-1"></i> Reset
-                        </a>
-                    </div>
-                @endif
+                <div id="catalog-reset-col" class="{{ (request()->filled('search') || request()->filled('brand')) ? 'col-12 col-md-1 col-lg-1 d-flex align-items-center' : 'd-none' }}">
+                    <a href="{{ route('catalog.index') }}" id="catalog-reset-btn" class="btn btn-outline-secondary w-100 px-2" title="Reset all filters back to default" data-ajax-link>
+                        <i class="bi bi-x-circle me-1"></i> Reset
+                    </a>
+                </div>
             </form>
         </div>
     </div>
 
     <!-- Active Filters Summary Badge Pills -->
-    @if(request()->filled('search') || request()->filled('brand') || (request()->has('availability') && request('availability') !== 'available'))
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 small">
-            <span class="text-secondary fw-semibold">Filter aktif:</span>
-            @if(request()->filled('search'))
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
-                    Pencarian: "{{ request('search') }}"
-                </span>
-            @endif
-            @if(request()->filled('brand'))
-                <span class="badge bg-dark-subtle text-dark border px-2 py-1">
-                    Merek: {{ request('brand') }}
-                </span>
-            @endif
-            @if(request()->has('availability') && request('availability') !== 'available')
-                <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">
-                    Status: {{ request('availability') === 'all' ? 'Semua (Tersedia & Dipesan)' : 'Dipesan Saja' }}
-                </span>
-            @endif
-            <a href="{{ route('catalog.index') }}" class="text-danger text-decoration-none small ms-1">
-                <i class="bi bi-trash3 me-1"></i>Clear all
-            </a>
-        </div>
-    @endif
+    <div id="catalog-active-filters">
+        @if(request()->filled('search') || request()->filled('brand'))
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3 small">
+                <span class="text-secondary fw-semibold">Filter aktif:</span>
+                @if(request()->filled('search'))
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                        Pencarian: "{{ request('search') }}"
+                    </span>
+                @endif
+                @if(request()->filled('brand'))
+                    <span class="badge bg-dark-subtle text-dark border px-2 py-1">
+                        Merek: {{ request('brand') }}
+                    </span>
+                @endif
+                <a href="{{ route('catalog.index') }}" class="text-danger text-decoration-none small ms-1" data-ajax-link>
+                    <i class="bi bi-trash3 me-1"></i>Clear all
+                </a>
+            </div>
+        @endif
+    </div>
+
+    <!-- Catalog Content Container (Updated via AJAX) -->
+    <div id="catalog-content-container">
 
     <!-- Catalog Laptop List -->
     @if($laptops->count() > 0)
@@ -278,7 +269,7 @@
                 </p>
                 <div class="d-flex justify-content-center gap-2 mt-3">
                     @if(request()->hasAny(['search', 'brand', 'availability']))
-                        <a href="{{ route('catalog.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('catalog.index') }}" class="btn btn-outline-secondary" data-ajax-link>
                             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
                         </a>
                     @endif
@@ -291,6 +282,7 @@
             </div>
         </div>
     @endif
+    </div>{{-- /#catalog-content-container --}}
 </div>
 
 @push('styles')
@@ -302,56 +294,161 @@
     }
     .hover-shadow { transition: box-shadow .2s ease, transform .15s ease; }
     .hover-shadow:hover { box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.12) !important; transform: translateY(-1px); }
+
+    /* Unified input-group focus style */
+    .input-group:focus-within {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.2);
+        border-radius: var(--bs-border-radius);
+    }
+    .input-group:focus-within .input-group-text,
+    .input-group:focus-within .form-select,
+    .input-group:focus-within .form-control {
+        border-color: #86b7fe !important;
+    }
+    .input-group .form-select:focus,
+    .input-group .form-control:focus {
+        box-shadow: none !important;
+    }
 </style>
 @endpush
 
 @push('scripts')
 <script>
     /**
-     * Instant Client-side Filter Behavior for Public Catalog
-     * Automatically applies filter on dropdown selection and debounced search typing.
+     * Seamless AJAX Search, Filter & Pagination for Public Catalog
+     * Updates the catalog content and active filter badges without full page reloads.
      */
     document.addEventListener('DOMContentLoaded', function () {
         const filterForm = document.getElementById('catalog-filter-form');
-        if (!filterForm) return;
+        const contentContainer = document.getElementById('catalog-content-container');
+        const activeFiltersContainer = document.getElementById('catalog-active-filters');
+        const searchInput = document.getElementById('catalog-search');
+        const searchIcon = document.getElementById('search-icon');
+        const resetCol = document.getElementById('catalog-reset-col');
 
-        // 1. Dropdown selects: submit immediately upon change
+        if (!filterForm || !contentContainer) return;
+
+        let activeController = null;
+
+        async function fetchCatalog(url, pushState = true) {
+            if (activeController) {
+                activeController.abort();
+            }
+            activeController = new AbortController();
+
+            // Visual feedback: dim container & show spinner in search icon
+            contentContainer.style.opacity = '0.5';
+            contentContainer.style.pointerEvents = 'none';
+            if (searchIcon) {
+                searchIcon.className = 'spinner-border spinner-border-sm text-primary';
+            }
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    signal: activeController.signal
+                });
+
+                if (!response.ok) throw new Error('Network response error');
+
+                const htmlText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+
+                // 1. Replace catalog cards / pagination content
+                const newContent = doc.getElementById('catalog-content-container');
+                if (newContent) {
+                    contentContainer.innerHTML = newContent.innerHTML;
+                }
+
+                // 2. Replace active filters badges
+                const newActiveFilters = doc.getElementById('catalog-active-filters');
+                if (newActiveFilters && activeFiltersContainer) {
+                    activeFiltersContainer.innerHTML = newActiveFilters.innerHTML;
+                }
+
+                // 3. Update form controls (Brand select, Availability select, Search value, Reset button)
+                const newSearchInput = doc.getElementById('catalog-search');
+                if (newSearchInput && searchInput && document.activeElement !== searchInput) {
+                    searchInput.value = newSearchInput.value;
+                }
+
+                const newBrandSelect = doc.getElementById('catalog-brand');
+                const brandSelect = document.getElementById('catalog-brand');
+                if (newBrandSelect && brandSelect) {
+                    brandSelect.innerHTML = newBrandSelect.innerHTML;
+                    brandSelect.value = newBrandSelect.value;
+                }
+
+                // Toggle reset button column
+                const newResetCol = doc.getElementById('catalog-reset-col');
+                if (newResetCol && resetCol) {
+                    resetCol.className = newResetCol.className;
+                }
+
+                // Update browser URL without reload
+                if (pushState) {
+                    window.history.pushState({ path: url }, '', url);
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('AJAX Catalog load error:', err);
+                }
+            } finally {
+                contentContainer.style.opacity = '1';
+                contentContainer.style.pointerEvents = 'auto';
+                if (searchIcon) {
+                    searchIcon.className = 'bi bi-search';
+                }
+            }
+        }
+
+        // 1. Submit search form via AJAX
+        filterForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams(formData);
+            const url = `${filterForm.action}?${params.toString()}`;
+            fetchCatalog(url);
+        });
+
+        // 2. Dropdown selects: fetch instantly on change
         const autoSelects = filterForm.querySelectorAll('.auto-submit');
         autoSelects.forEach(select => {
             select.addEventListener('change', function () {
-                filterForm.submit();
+                const formData = new FormData(filterForm);
+                const params = new URLSearchParams(formData);
+                const url = `${filterForm.action}?${params.toString()}`;
+                fetchCatalog(url);
             });
         });
 
-        // 2. Search input: debounce 400ms so typing waits for the user to pause
-        const searchInput = document.getElementById('catalog-search');
-        const searchIcon = document.getElementById('search-icon');
-        let debounceTimer = null;
-
+        // 3. Clearing search input with native 'x'
         if (searchInput) {
-            // If search query is present, keep focus and place cursor at end
-            if (searchInput.value && document.activeElement === document.body) {
-                searchInput.focus();
-                const currentVal = searchInput.value;
-                searchInput.value = '';
-                searchInput.value = currentVal;
-            }
-
-            searchInput.addEventListener('input', function () {
-                if (searchIcon) {
-                    searchIcon.className = 'spinner-border spinner-border-sm text-primary';
-                }
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    filterForm.submit();
-                }, 400);
-            });
-
-            // If user clicks the native clear 'x' in search field, submit immediately
             searchInput.addEventListener('search', function () {
-                filterForm.submit();
+                if (this.value === '') {
+                    const formData = new FormData(filterForm);
+                    const params = new URLSearchParams(formData);
+                    const url = `${filterForm.action}?${params.toString()}`;
+                    fetchCatalog(url);
+                }
             });
         }
+
+        // 4. Delegated clicks for pagination & reset links inside catalog
+        document.addEventListener('click', function (e) {
+            // Check if pagination link or data-ajax-link was clicked
+            const link = e.target.closest('#catalog-content-container .pagination a, #catalog-active-filters a, a[data-ajax-link]');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchCatalog(link.href);
+            }
+        });
+
+        // 5. Handle browser back / forward buttons
+        window.addEventListener('popstate', function (e) {
+            fetchCatalog(window.location.href, false);
+        });
     });
 </script>
 @endpush

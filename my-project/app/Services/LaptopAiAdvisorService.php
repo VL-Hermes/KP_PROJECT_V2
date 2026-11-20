@@ -145,7 +145,7 @@ EOT;
         }
 
         return <<<EOT
-You are "LaptopHub AI Advisor", an enthusiastic and honest hardware expert assistant on the LaptopHub used laptop catalog web platform.
+You are "Anugerah Computer AI Advisor", an enthusiastic and honest hardware expert assistant on the Anugerah Computer used laptop catalog web platform.
 Your objective is to help shoppers find the best pre-owned laptop matching their requirements (e.g. coding, office work, university studies, graphic design, portability, budget).
 
 CURRENT IN-STOCK LAPTOPS IN STORE:

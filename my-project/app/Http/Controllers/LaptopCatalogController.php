@@ -32,14 +32,8 @@ class LaptopCatalogController extends Controller
             $query->where('brand', $request->input('brand'));
         }
 
-        // Availability filter: default to showing available, but allow viewing all or sold
-        $availability = $request->input('availability', 'available');
-        if ($availability === 'available') {
-            $query->where('is_available', true);
-        } elseif ($availability === 'unavailable') {
-            $query->where('is_available', false);
-        }
-        // If 'all', do not filter by is_available
+        // Only show available laptops in public catalog
+        $query->where('is_available', true);
 
         // Sort order
         $sortBy = $request->input('sort', 'latest');
@@ -53,12 +47,15 @@ class LaptopCatalogController extends Controller
 
         $laptops = $query->paginate(9)->withQueryString();
 
-        // Get distinct brands for filter dropdown
-        $brands = Laptop::select('brand')
-            ->distinct()
+        // Get distinct brands from available laptops only for filter dropdown
+        $brands = Laptop::where('is_available', true)
+            ->select('brand')
+            ->selectRaw('count(*) as count')
+            ->groupBy('brand')
             ->orderBy('brand')
-            ->pluck('brand');
-
+            ->get();
+        // dd($brands);
+            
         $totalAvailable = Laptop::where('is_available', true)->count();
         $totalAll = Laptop::count();
 

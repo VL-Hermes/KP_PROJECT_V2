@@ -429,6 +429,162 @@ class LaptopInventoryTest extends TestCase
         $this->assertEquals(7900000, (float)$laptop->price_estimate);
     }
 
+    /**
+     * Test admin can upload multiple images and view them in a carousel on the catalog page.
+     */
+    public function test_admin_can_upload_multiple_images_and_view_carousel_on_catalog(): void
+    {
+        Storage::fake('public');
+
+        $img1 = UploadedFile::fake()->image('laptop_front.jpg', 800, 600);
+        $img2 = UploadedFile::fake()->image('laptop_keyboard.jpg', 800, 600);
+        $img3 = UploadedFile::fake()->image('laptop_side.jpg', 800, 600);
+
+        $payload = [
+            'brand' => 'ASUS',
+            'model' => 'ZenBook 14 OLED',
+            'processor_cpu' => 'Intel Core Ultra 7 155H',
+            'memory_ram' => '32GB LPDDR5X',
+            'storage' => '1TB NVMe Gen4 SSD',
+            'graphics_gpu' => 'Intel Arc Graphics',
+            'display' => '14" 2.8K 120Hz OLED',
+            'price_estimate' => 18500000,
+            'is_available' => '1',
+            'images' => [$img1, $img2, $img3],
+        ];
+
+        $response = $this->actingAs($this->adminUser)->post('/admin/inventory', $payload);
+        $response->assertRedirect('/admin/inventory');
+
+        $laptop = Laptop::where('model', 'ZenBook 14 OLED')->firstOrFail();
+
+        // Ensure images were saved in laptop_images relationship
+        $this->assertCount(3, $laptop->images);
+        $this->assertTrue($laptop->hasMultipleImages());
+        $this->assertCount(3, $laptop->all_image_urls);
+
+        // Verify all 3 files exist on storage
+        foreach ($laptop->images as $img) {
+            Storage::disk('public')->assertExists($img->image_path);
+        }
+
+        // View catalog show page: carousel components must be present
+        $catalogResponse = $this->get("/catalog/{$laptop->id}");
+        $catalogResponse->assertStatus(200);
+        $catalogResponse->assertSee('id="laptopPhotoCarousel"', false);
+        $catalogResponse->assertSee('carousel-control-prev', false);
+        $catalogResponse->assertSee('carousel-control-next', false);
+        $catalogResponse->assertSee('carousel-indicators', false);
+
+        // All image URLs should be rendered
+        foreach ($laptop->all_image_urls as $url) {
+            $catalogResponse->assertSee($url);
+        }
+    }
+
+    /**
+     * Test admin can selectively delete an image from a laptop gallery.
+     */
+    public function test_admin_can_selectively_delete_images_from_laptop(): void
+    {
+        Storage::fake('public');
+
+        $img1 = UploadedFile::fake()->image('dell_1.jpg');
+        $img2 = UploadedFile::fake()->image('dell_2.jpg');
+
+        $laptop = Laptop::create([
+            'brand' => 'Dell',
+            'model' => 'XPS 13 Plus',
+            'processor_cpu' => 'Intel Core i7-1360P',
+            'memory_ram' => '16GB',
+            'storage' => '512GB SSD',
+            'graphics_gpu' => 'Intel Iris Xe',
+            'display' => '13.4" FHD+',
+            'is_available' => true,
+        ]);
+
+        $path1 = $img1->store('laptops', 'public');
+        $path2 = $img2->store('laptops', 'public');
+
+        $laptopImage1 = $laptop->images()->create(['image_path' => $path1, 'sort_order' => 0]);
+        $laptopImage2 = $laptop->images()->create(['image_path' => $path2, 'sort_order' => 1]);
+        $laptop->update(['image_path' => $path1]);
+
+        Storage::disk('public')->assertExists($path1);
+        Storage::disk('public')->assertExists($path2);
+
+        // Update laptop and request deletion of the first image
+        $updatePayload = [
+            'brand' => 'Dell',
+            'model' => 'XPS 13 Plus',
+            'processor_cpu' => 'Intel Core i7-1360P',
+            'memory_ram' => '16GB',
+            'storage' => '512GB SSD',
+            'graphics_gpu' => 'Intel Iris Xe',
+            'display' => '13.4" FHD+',
+            'delete_images' => [$laptopImage1->id],
+        ];
+
+        $response = $this->actingAs($this->adminUser)->put("/admin/inventory/{$laptop->id}", $updatePayload);
+        $response->assertRedirect('/admin/inventory');
+
+        // Verify image 1 was deleted from disk and database
+        Storage::disk('public')->assertMissing($path1);
+        $this->assertDatabaseMissing('laptop_images', ['id' => $laptopImage1->id]);
+
+        // Verify image 2 still exists
+        Storage::disk('public')->assertExists($path2);
+        $this->assertDatabaseHas('laptop_images', ['id' => $laptopImage2->id]);
+
+        // Primary image_path should now fallback to image 2
+        $laptop->refresh();
+        $this->assertEquals($path2, $laptop->image_path);
+    }
+
+    /**
+     * Test deleting a laptop also deletes all its associated multiple images from storage.
+     */
+    public function test_deleting_laptop_cleans_up_all_multiple_images(): void
+    {
+        Storage::fake('public');
+
+        $img1 = UploadedFile::fake()->image('hp_front.jpg');
+        $img2 = UploadedFile::fake()->image('hp_back.jpg');
+
+        $path1 = $img1->store('laptops', 'public');
+        $path2 = $img2->store('laptops', 'public');
+
+        $laptop = Laptop::create([
+            'brand' => 'HP',
+            'model' => 'Spectre x360',
+            'processor_cpu' => 'Intel Core i7-1355U',
+            'memory_ram' => '16GB',
+            'storage' => '1TB SSD',
+            'graphics_gpu' => 'Intel Iris Xe',
+            'display' => '13.5" 3K2K OLED',
+            'is_available' => true,
+            'image_path' => $path1,
+        ]);
+
+        $laptop->images()->create(['image_path' => $path1, 'sort_order' => 0]);
+        $laptop->images()->create(['image_path' => $path2, 'sort_order' => 1]);
+
+        Storage::disk('public')->assertExists($path1);
+        Storage::disk('public')->assertExists($path2);
+
+        // Delete laptop
+        $response = $this->actingAs($this->adminUser)->delete("/admin/inventory/{$laptop->id}");
+        $response->assertRedirect('/admin/inventory');
+
+        // Both files should be deleted from storage
+        Storage::disk('public')->assertMissing($path1);
+        Storage::disk('public')->assertMissing($path2);
+
+        // Relational records should be deleted (cascade)
+        $this->assertDatabaseMissing('laptop', ['id' => $laptop->id]);
+        $this->assertDatabaseMissing('laptop_images', ['laptop_id' => $laptop->id]);
+    }
+
     // ─────────────────────────────────────────────
     //  Admin Profile (Account Settings)
     // ─────────────────────────────────────────────

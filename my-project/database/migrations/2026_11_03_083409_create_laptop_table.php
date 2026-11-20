@@ -9,11 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+
+    
     public function up(): void
     {
         Schema::create('laptop', function (Blueprint $table) {
+            $brands = [
+                'Acer','Apple','ASUS','Dell','HP','Huawei',
+                'Lenovo','Microsoft','MSI','Samsung','Xiaomi / Redmi',
+            ];    
+                
             $table->id();
-
+            
             //Section 1 : Core Hardware Specification *REQUIRED
             $table->string('brand');
             $table->string('model');

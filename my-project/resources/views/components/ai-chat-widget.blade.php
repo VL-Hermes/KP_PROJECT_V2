@@ -9,8 +9,8 @@
         <span class="ai-sparkle-icon d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle" style="width: 28px; height: 28px;">
             <i class="bi bi-stars fs-6"></i>
         </span>
-        <span class="fw-bold small d-none d-sm-inline">Tanya AI Rekomendasi</span>
-        <span class="badge bg-warning text-dark fw-bold rounded-pill" style="font-size: 0.65rem;">Gemini</span>
+        <span class="fw-bold small d-none d-sm-inline">Tanya Rekomendasi AI</span>
+        <span class="badge bg-warning text-dark fw-bold rounded-pill" style="font-size: 0.65rem;color:black !important">Gemini</span>
     </button>
 
     {{-- Expandable Chat Window --}}
@@ -26,7 +26,7 @@
                 </div>
                 <div>
                     <h6 class="mb-0 fw-bold d-flex align-items-center gap-1">
-                        LaptopHub AI Advisor
+                        Anugerah Computer AI Advisor
                     </h6>
                     <small class="text-secondary" style="font-size: 0.72rem;">
                         <i class="bi bi-check-circle-fill text-success me-1"></i>Live Stok Inventory
@@ -49,7 +49,7 @@
                     <i class="bi bi-stars"></i>
                 </div>
                 <div class="bg-light p-3 rounded-3 text-dark border w-100">
-                    <p class="mb-2 fw-semibold">Halo! 👋 Saya asisten AI LaptopHub.</p>
+                    <p class="mb-2 fw-semibold">Halo! 👋 Saya asisten AI Anugerah Computer.</p>
                     <p class="mb-2 text-secondary small">
                         Bingung memilih laptop bekas yang cocok? Beritahu saya kebutuhan Anda (misalnya untuk koding kuliah, desain grafis ringan, kerja kantoran, atau daya tahan baterai).
                     </p>
@@ -125,8 +125,8 @@
         const chatBody = document.getElementById('ai-chat-body');
         const chips = document.querySelectorAll('.ai-prompt-chip');
 
-        const STORAGE_KEY = 'laptophub_ai_chat_history';
-        const STATE_KEY = 'laptophub_ai_chat_open';
+        const STORAGE_KEY = 'Anugerah Computer_ai_chat_history';
+        const STATE_KEY = 'Anugerah Computer_ai_chat_open';
 
         let chatHistory = [];
 

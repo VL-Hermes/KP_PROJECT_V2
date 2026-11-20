@@ -95,6 +95,106 @@ class LaptopSeeder extends Seeder
             'is_available' => false, // Currently reserved / sold
             'addons' => 'Original 180W ASUS AC Adapter + External 1080p 60fps USB Webcam',
         ]);
+
+        // 1. Apple MacBook Air (M1) - missing thermal, physical, camera, audio, addons
+        Laptop::create([
+            'brand' => 'Apple',
+            'model' => 'MacBook Air M1 (2020)',
+            'processor_cpu' => 'Apple M1 Chip (8-Core CPU with 4 performance & 4 efficiency cores)',
+            'memory_ram' => '8 GB Unified Memory',
+            'storage' => '256 GB Apple NVMe SSD',
+            'graphics_gpu' => '7-Core Apple GPU',
+            'display' => '13.3" Retina Display (2560x1600) with True Tone, 400 nits',
+            'price_estimate' => 8900000,
+            'battery_health' => '91% Maximum Capacity (Normal status, ~12 hrs web browsing)',
+            'storage_health' => '99% Health (NVMe SMART OK, 142 cycle/power-on count)',
+            'thermal_performance' => null,
+            'physical_condition' => null,
+            'ports_connectivity' => '2x Thunderbolt / USB 4, 3.5mm headphone jack, Wi-Fi 6 (802.11ax) + Bluetooth 5.0',
+            'camera' => null,
+            'microphone' => 'Working (Three-mic array with directional beamforming)',
+            'audio' => null,
+            'keyboard' => 'Working (Magic Keyboard with Touch ID, backlit)',
+            'operating_system' => 'macOS Sequoia (Factory reset, ready for setup)',
+            'is_locks_cleared' => true,
+            'is_available' => true,
+            'addons' => null,
+        ]);
+
+        // 2. ASUS ROG Zephyrus G14 - missing battery, storage_health, ports_connectivity, microphone, operating_system
+        Laptop::create([
+            'brand' => 'ASUS',
+            'model' => 'ROG Zephyrus G14 GA401',
+            'processor_cpu' => 'AMD Ryzen 7 5800HS (8 Cores, 16 Threads, up to 4.4 GHz)',
+            'memory_ram' => '16 GB DDR4-3200 MHz (8 GB onboard + 8 GB SO-DIMM)',
+            'storage' => '1 TB PCIe 3.0 NVMe M.2 SSD',
+            'graphics_gpu' => 'NVIDIA GeForce RTX 3060 Laptop GPU (6 GB GDDR6)',
+            'display' => '14.0" WQHD (2560x1440) IPS Anti-Glare, 120Hz, 100% DCI-P3',
+            'price_estimate' => 11250000,
+            'battery_health' => null,
+            'storage_health' => null,
+            'thermal_performance' => null,
+            'physical_condition' => "Grade B+ condition.\nSmall nick near rear vent grille; palm rest and screen in great shape.",
+            'ports_connectivity' => null,
+            'camera' => 'Not available (GA401 model has no built-in webcam)',
+            'microphone' => null,
+            'audio' => 'Working (Quad speakers with Dolby Atmos)',
+            'keyboard' => 'Working (Chiclet keyboard with white backlight, minor wear on WASD)',
+            'operating_system' => null,
+            'is_locks_cleared' => null,
+            'is_available' => true,
+            'addons' => '180W ASUS power adapter',
+        ]);
+
+        // 3. Dell Latitude 5420 - missing price_estimate, storage_health, physical_condition, camera, keyboard, is_locks_cleared
+        Laptop::create([
+            'brand' => 'Dell',
+            'model' => 'Latitude 5420',
+            'processor_cpu' => 'Intel Core i7-1185G7 (4 Cores, 8 Threads, up to 4.8 GHz)',
+            'memory_ram' => '16 GB DDR4-3200 MHz (Dual Channel)',
+            'storage' => '256 GB NVMe PCIe M.2 SSD',
+            'graphics_gpu' => 'Intel Iris Xe Graphics',
+            'display' => '14.0" Full HD (1920x1080) WVA Anti-Glare, 250 nits',
+            'price_estimate' => null,
+            'battery_health' => 'Fair (74% health, ~3.5 hrs light office use)',
+            'storage_health' => null,
+            'thermal_performance' => 'Good (Fan quiet under normal load, peak 78°C)',
+            'physical_condition' => null,
+            'ports_connectivity' => '2x Thunderbolt 4, 2x USB 3.2 Gen 1, HDMI 2.0, microSD slot, Intel Wi-Fi 6 AX201 + Bluetooth 5.1',
+            'camera' => null,
+            'microphone' => 'Working (Dual digital microphones tested)',
+            'audio' => 'Working (Waves MaxxAudio stereo speakers)',
+            'keyboard' => null,
+            'operating_system' => 'Windows 11 Pro 64-bit (OEM license)',
+            'is_locks_cleared' => null,
+            'is_available' => true,
+            'addons' => 'Dell 65W USB-C charger',
+        ]);
+
+        // 4. HP Pavilion Aero 13 - missing battery, thermal_performance, ports_connectivity, microphone, audio, keyboard, addons
+        Laptop::create([
+            'brand' => 'HP',
+            'model' => 'Pavilion Aero 13-be1000',
+            'processor_cpu' => 'AMD Ryzen 5 5625U (6 Cores, 12 Threads, up to 4.3 GHz)',
+            'memory_ram' => '8 GB LPDDR4x-4266 MHz (Soldered)',
+            'storage' => '512 GB PCIe NVMe M.2 SSD',
+            'graphics_gpu' => 'AMD Radeon Graphics',
+            'display' => '13.3" WUXGA (1920x1200) IPS Anti-Glare, 16:10, 400 nits',
+            'price_estimate' => 6400000,
+            'battery_health' => null,
+            'storage_health' => '100% Healthy (SMART OK, 0 bad sectors)',
+            'thermal_performance' => null,
+            'physical_condition' => "Grade A condition.\nClean silver-white chassis with minimal micro-scratches on bottom cover.",
+            'ports_connectivity' => null,
+            'camera' => 'Working (HP True Vision 720p HD camera)',
+            'microphone' => null,
+            'audio' => null,
+            'keyboard' => null,
+            'operating_system' => 'Windows 11 Home Single Language (Activated)',
+            'is_locks_cleared' => true,
+            'is_available' => true,
+            'addons' => null,
+        ]);
     }
 }
 

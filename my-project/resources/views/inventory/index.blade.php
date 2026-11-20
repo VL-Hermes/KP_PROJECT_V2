@@ -68,50 +68,59 @@
     <!-- Filters & Search Toolbar -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-3">
-            <form action="{{ route('laptops.index') }}" method="GET" class="row g-2 align-items-center">
+            <form id="inventory-filter-form" action="{{ route('laptops.index') }}" method="GET" class="row g-2 align-items-center">
                 <div class="col-md-5">
                     <div class="input-group">
                         <span class="input-group-text bg-white text-muted border-end-0">
-                            <i class="bi bi-search"></i>
+                            <i id="inventory-search-icon" class="bi bi-search"></i>
                         </span>
-                        <input type="text" name="search" class="form-control border-start-0" 
+                        <input type="text" name="search" id="inventory-search" class="form-control border-start-0" 
                                placeholder="Search brand, model, processor, storage..." 
                                value="{{ request('search') }}">
                     </div>
                 </div>
 
                 <div class="col-sm-6 col-md-3">
-                    <select name="brand" class="form-select">
-                        <option value="">All Brands</option>
+                    <select name="brand" id="inventory-brand" class="form-select">
+                        <option value="">All Brands ({{ $totalCount }})</option>
                         @foreach($brands as $brand)
-                            <option value="{{ $brand }}" {{ request('brand') === $brand ? 'selected' : '' }}>
-                                {{ $brand }}
+                            @php
+                                $bName = is_object($brand) ? $brand->brand : $brand;
+                                $bCount = is_object($brand) ? $brand->count : null;
+                            @endphp
+                            <option value="{{ $bName }}" {{ request('brand') === $bName ? 'selected' : '' }}>
+                                {{ $bName }} @if($bCount !== null) ({{ $bCount }}) @endif
                             </option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="col-sm-6 col-md-2">
-                    <select name="status" class="form-select">
-                        <option value="">All Statuses</option>
-                        <option value="available" {{ request('status') === 'available' ? 'selected' : '' }}>Available</option>
-                        <option value="unavailable" {{ request('status') === 'unavailable' ? 'selected' : '' }}>Reserved / Sold</option>
+                    <select name="status" id="inventory-status" class="form-select">
+                        <option value="">All Statuses ({{ $totalCount }})</option>
+                        <option value="available" {{ request('status') === 'available' ? 'selected' : '' }}>
+                            Available ({{ $availableCount }})
+                        </option>
+                        <option value="unavailable" {{ request('status') === 'unavailable' ? 'selected' : '' }}>
+                            Reserved / Sold ({{ $unavailableCount }})
+                        </option>
                     </select>
                 </div>
 
-                <div class="col-md-2 d-flex gap-2">
+                <div class="col-md-2 d-flex gap-2" id="inventory-actions-col">
                     <button type="submit" class="btn btn-dark w-100">
                         <i class="bi bi-funnel me-1"></i> Filter
                     </button>
-                    @if(request()->hasAny(['search', 'brand', 'status']))
-                        <a href="{{ route('laptops.index') }}" class="btn btn-outline-secondary" title="Reset">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </a>
-                    @endif
+                    <a href="{{ route('laptops.index') }}" id="inventory-reset-btn" class="btn btn-outline-secondary {{ request()->hasAny(['search', 'brand', 'status']) ? '' : 'd-none' }}" title="Reset" data-ajax-link>
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- Inventory Table Container (Updated via AJAX) -->
+    <div id="inventory-table-container">
 
     <!-- Inventory Table -->
     <div class="card shadow-sm border-0">
@@ -130,7 +139,7 @@
                 </thead>
                 <tbody>
                     @forelse($laptops as $laptop)
-                        <tr>
+                        <tr class="align-middle laptop-row" data-href="{{ route('catalog.show', $laptop) }}">
                             <td class="ps-3 fw-bold text-muted small">
                                 #{{ $laptop->id }}
                             </td>
@@ -176,13 +185,13 @@
                                     @csrf
                                     @method('PATCH')
                                     @if($laptop->is_available)
-                                        <button type="submit" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill btn btn-link text-decoration-none" title="Click to mark as Sold/Unavailable">
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold" title="Click to mark as Sold/Unavailable">
                                             <i class="bi bi-check-circle-fill me-1"></i> Available
                                         </button>
                                     @else
-                                        <button type="submit" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 rounded-pill btn btn-link text-decoration-none" title="Click to mark as Available">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" title="Click to mark as Available">
                                             <i class="bi bi-dash-circle me-1"></i> Sold / Reserved
-                                        </button>
+                                        </button>                                    
                                     @endif
                                 </form>
                             </td>
@@ -226,7 +235,8 @@
                 {{ $laptops->links() }}
             </div>
         @endif
-    </div>
+        </div>
+    </div>{{-- /#inventory-table-container --}}
 </div>
 
 <!-- Delete Confirmation Modal -->
@@ -262,6 +272,7 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // 1. Delete Confirmation Modal setup
         const deleteModal = document.getElementById('deleteModal');
         if (deleteModal) {
             deleteModal.addEventListener('show.bs.modal', function (event) {
@@ -276,8 +287,173 @@
                 nameDisplay.textContent = laptopName;
             });
         }
+
+        // 2. Seamless AJAX Search & Filter for Inventory Management
+        const filterForm = document.getElementById('inventory-filter-form');
+        const tableContainer = document.getElementById('inventory-table-container');
+        const searchInput = document.getElementById('inventory-search');
+        const searchIcon = document.getElementById('inventory-search-icon');
+        const resetBtn = document.getElementById('inventory-reset-btn');
+
+        if (!filterForm || !tableContainer) return;
+
+        let activeController = null;
+
+        async function fetchInventory(url, pushState = true) {
+            if (activeController) {
+                activeController.abort();
+            }
+            activeController = new AbortController();
+
+            // Dim table container for visual feedback
+            tableContainer.style.opacity = '0.5';
+            tableContainer.style.pointerEvents = 'none';
+            if (searchIcon) {
+                searchIcon.className = 'spinner-border spinner-border-sm text-primary';
+            }
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    signal: activeController.signal
+                });
+
+                if (!response.ok) throw new Error('Network response error');
+
+                const htmlText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+
+                // Update Table Content
+                const newTable = doc.getElementById('inventory-table-container');
+                if (newTable) {
+                    tableContainer.innerHTML = newTable.innerHTML;
+                }
+
+                // Update Form inputs if needed (when resetting or clicking back)
+                const newSearch = doc.getElementById('inventory-search');
+                if (newSearch && searchInput && document.activeElement !== searchInput) {
+                    searchInput.value = newSearch.value;
+                }
+
+                const newBrand = doc.getElementById('inventory-brand');
+                const brand = document.getElementById('inventory-brand');
+                if (newBrand && brand) {
+                    brand.innerHTML = newBrand.innerHTML;
+                    brand.value = newBrand.value;
+                }
+
+                const newStatus = doc.getElementById('inventory-status');
+                const status = document.getElementById('inventory-status');
+                if (newStatus && status) {
+                    status.innerHTML = newStatus.innerHTML;
+                    status.value = newStatus.value;
+                }
+
+                // Update Reset button visibility
+                const newReset = doc.getElementById('inventory-reset-btn');
+                if (newReset && resetBtn) {
+                    resetBtn.className = newReset.className;
+                }
+
+                // Update browser URL without full reload
+                if (pushState) {
+                    window.history.pushState({ path: url }, '', url);
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('AJAX Inventory load error:', err);
+                }
+            } finally {
+                tableContainer.style.opacity = '1';
+                tableContainer.style.pointerEvents = 'auto';
+                if (searchIcon) {
+                    searchIcon.className = 'bi bi-search';
+                }
+            }
+        }
+
+        // Form Submit via AJAX
+        filterForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams(formData);
+            const url = `${filterForm.action}?${params.toString()}`;
+            fetchInventory(url);
+        });
+
+        // Dropdown filters trigger fetch automatically on change
+        const filterSelects = filterForm.querySelectorAll('select');
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function () {
+                const formData = new FormData(filterForm);
+                const params = new URLSearchParams(formData);
+                const url = `${filterForm.action}?${params.toString()}`;
+                fetchInventory(url);
+            });
+        });
+
+        // Delegated clicks for pagination & reset links
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('#inventory-table-container .pagination a, #inventory-reset-btn');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchInventory(link.href);
+            }
+        });
+
+        // Browser back/forward navigation
+        window.addEventListener('popstate', function () {
+            fetchInventory(window.location.href, false);
+        });
+
+        // 3. Clickable Table Rows -> Navigate to Catalog Detail Page
+        document.addEventListener('click', function (e) {
+            // Ignore clicks on interactive controls inside the row
+            if (e.target.closest('button, a, input, select, textarea, form, [data-bs-toggle]')) {
+                return;
+            }
+
+            const row = e.target.closest('tr[data-href]');
+            if (row && row.dataset.href) {
+                if (e.ctrlKey || e.metaKey) {
+                    window.open(row.dataset.href, '_blank');
+                } else {
+                    window.location.href = row.dataset.href;
+                }
+            }
+        });
+
+        // Middle-click opens in new tab
+        document.addEventListener('auxclick', function (e) {
+            if (e.button === 1) {
+                if (e.target.closest('button, a, input, select, textarea, form, [data-bs-toggle]')) {
+                    return;
+                }
+                const row = e.target.closest('tr[data-href]');
+                if (row && row.dataset.href) {
+                    window.open(row.dataset.href, '_blank');
+                }
+            }
+        });
     });
 </script>
+@endpush
+
+@push('styles')
+<style>
+/* Clickable laptop table row styling */
+.laptop-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+.laptop-row:hover > td {
+    background-color: rgba(13, 110, 253, 0.04) !important;
+}
+[data-bs-theme="dark"] .laptop-row:hover > td {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+</style>
 @endpush
 @endsection
 

@@ -167,27 +167,65 @@ class Laptop extends Model
     }
 
     /**
+     * Associated photos for this laptop.
+     */
+    public function images(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LaptopImage::class, 'laptop_id')->orderBy('sort_order')->orderBy('id');
+    }
+
+    /**
      * Check if laptop has an associated photo.
      */
     public function hasImage(): bool
     {
-        return filled($this->image_path);
+        return filled($this->image_path) || ($this->relationLoaded('images') ? $this->images->isNotEmpty() : $this->images()->exists());
     }
 
     /**
-     * Get the accessible public URL of the laptop's photo.
+     * Check if laptop has multiple associated photos for carousel display.
+     */
+    public function hasMultipleImages(): bool
+    {
+        return count($this->all_image_urls) > 1;
+    }
+
+    /**
+     * Get all accessible public URLs of the laptop's photos.
+     *
+     * @return array<int, string>
+     */
+    public function getAllImageUrlsAttribute(): array
+    {
+        $urls = [];
+
+        // Collect URLs from images relationship
+        $images = $this->relationLoaded('images') ? $this->images : $this->images()->get();
+        foreach ($images as $img) {
+            $urls[] = $img->image_url;
+        }
+
+        // If primary image_path exists, ensure it is present at the beginning
+        if (filled($this->image_path)) {
+            $primaryUrl = (str_starts_with($this->image_path, 'http://') || str_starts_with($this->image_path, 'https://'))
+                ? $this->image_path
+                : asset('storage/' . $this->image_path);
+
+            if (!in_array($primaryUrl, $urls)) {
+                array_unshift($urls, $primaryUrl);
+            }
+        }
+
+        return array_values(array_unique($urls));
+    }
+
+    /**
+     * Get the primary accessible public URL of the laptop's photo.
      */
     public function getImageUrlAttribute(): ?string
     {
-        if (!$this->hasImage()) {
-            return null;
-        }
-
-        if (str_starts_with($this->image_path, 'http://') || str_starts_with($this->image_path, 'https://')) {
-            return $this->image_path;
-        }
-
-        return asset('storage/' . $this->image_path);
+        $all = $this->all_image_urls;
+        return $all[0] ?? null;
     }
 }
 
